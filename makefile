@@ -5,6 +5,7 @@ CC = arm-none-eabi-gcc
 AS = arm-none-eabi-as
 LD = arm-none-eabi-ld
 OC = arm-none-eabi-objcopy
+LIBGCC = $(shell $(CC) -print-libgcc-file-name)
 
 LINKER_SCRIPT = ./navilos.ld
 MAP_FILE = build/navilos.map
@@ -45,7 +46,7 @@ gdb:
 
 $(navilos): $(ASM_OBJS) $(C_OBJS) $(LINKER_SCRIPT)
 	$(LD) -n -T $(LINKER_SCRIPT) -o $@ $(ASM_OBJS) \
-		$(C_OBJS) -Map=$(MAP_FILE)
+		$(C_OBJS) $(LIBGCC) -Map=$(MAP_FILE)
 	$(OC) -O binary $@ $(navilos_bin)
 
 build/%.o: boot/%.S
