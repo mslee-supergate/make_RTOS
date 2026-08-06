@@ -1,5 +1,5 @@
-ARCH= armv7-a
 MCPU= cortex-a8
+TARGET= rvpb
 
 CC = arm-none-eabi-gcc
 AS = arm-none-eabi-as
@@ -12,10 +12,17 @@ MAP_FILE = build/navilos.map
 ASM_SRCS = $(wildcard boot/*.S)
 ASM_OBJS = $(patsubst boot/%.S, build/%.o, $(ASM_SRCS))
 
-C_SRCS = $(wildcard boot/*.c)
-C_OBJS = $(patsubst boot/%.c, build/%.o, $(C_SRCS))
+VPATH = boot \
+		hal/$(TARGET) \
+		lib
 
-INC_DIRS = include
+C_SRCS = $(notdir $(wildcard boot/*.c))
+C_SRCS += $(notdir $(wildcard hal/$(TARGET)/*.c))
+C_SRCS += $(notdir $(wildcard lib/*.c))
+C_OBJS = $(patsubst %.c, build/%.o, $(C_SRCS))
+
+INC_DIRS = include hal hal/$(TARGET) lib
+INC_FLAGS = $(addprefix -I,$(INC_DIRS))
 
 navilos = build/navilos.axf
 navilos_bin = build/navilos.bin
@@ -28,7 +35,7 @@ clean:
 	@rm -fr build
 
 run: $(navilos)
-	qemu-system-arm -M realview-pb-a8 -kernel $(navilos)
+	qemu-system-arm -M realview-pb-a8 -kernel $(navilos) -nographic
 
 debug: $(navilos)
 	qemu-system-arm -M realview-pb-a8 -kernel $(navilos) -S -gdb tcp::1234,ipv4
@@ -43,8 +50,8 @@ $(navilos): $(ASM_OBJS) $(C_OBJS) $(LINKER_SCRIPT)
 
 build/%.o: boot/%.S
 	@mkdir -p build
-	$(CC) -g -march=$(ARCH) -mcpu=$(MCPU) -I $(INC_DIRS) -c -o $@ $<
+	$(CC) -g -mcpu=$(MCPU) $(INC_FLAGS) -c -o $@ $<
 
-build/%.o: $(C_SRCS)
-	@mkdir -p $(shell dirname $@)
-	$(CC) -g -march=$(ARCH) -mcpu=$(MCPU) -I $(INC_DIRS) -c -o $@ $<
+build/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) -g -mcpu=$(MCPU) $(INC_FLAGS) -c -o $@ $<
