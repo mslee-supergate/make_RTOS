@@ -1,4 +1,6 @@
+#include <stdbool.h>
 #include "stdint.h"
+#include "HalInterrupt.h"
 #include "HalUart.h"
 #include "stdio.h"
 
@@ -20,19 +22,13 @@ void main(void)
 
     //c, s, u, x
     Debug_printf_test();
-
-
-    i = 100;
-    while(i--)
-    {
-        uint8_t ch = Hal_uart_get_char();
-        Hal_uart_put_char(ch);
-    }
     
+    while(true);
 }
 
 static void Hw_init(void)
 {
+    Hal_interrupt_init();
     Hal_uart_init();
 }
 
