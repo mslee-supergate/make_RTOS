@@ -36,6 +36,9 @@ uint32_t Kernel_task_create(KernelTaskFunc_t startFunc)
     uint32_t task_id = sAllocated_tcb_index++;
     KernelTcb_t* new_tcb = &sTask_list[task_id];
 
+    
+    //new_tcb->priority = priority; //인자로 받아서 사용
+
     KernelTaskContext_t* ctx = (KernelTaskContext_t*)new_tcb->sp;
     ctx->pc = (uint32_t)startFunc;
 
@@ -50,3 +53,19 @@ static KernelTcb_t* Scheduler_round_robin_algorithm(void)
     return &sTask_list[sCurrent_tcp_index];
 }
 
+static KernelTcb_t* Scheduler_priority_algorithm(void)
+{
+    KernelTcb_t* next_tcb = sCurrent_tcb;
+
+    for (uint32_t i = 0; i < sAllocated_tcb_index; i++)
+    {
+        KernelTcb_t* candidate = &sTask_list[i];
+
+        if (candidate->priority < next_tcb->priority)
+        {
+            next_tcb = candidate;
+        }
+    }
+
+    return next_tcb;
+}
