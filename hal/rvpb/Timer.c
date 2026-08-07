@@ -9,7 +9,7 @@ static void interrupt_handler(void);
 
 static uint32_t internal_1ms_counter;
 
-Hal_timer_init(void)
+void Hal_timer_init(void)
 {
     //타이머 끄기
     Timer->timerxcontrol.bits.TimerEn = 0;
